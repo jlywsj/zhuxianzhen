@@ -1,0 +1,1372 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>朱仙镇木版年画 - 科普小游戏</title>
+    <link rel="icon" href="images/puzzles/1.png" type="image/png">
+    <link rel="shortcut icon" href="images/puzzles/1.png" type="image/png">
+    <link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Noto+Serif+SC:wght@500;700&display=swap"
+        rel="stylesheet">
+
+    <style>
+        /* =========================================
+           1. 全局与基础样式
+           ========================================= */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body,
+        html {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            font-family: 'Noto Serif SC', serif;
+            background-color: #f0dcb8;
+        }
+
+        /* 页面容器 */
+        .page {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: opacity 0.5s ease, transform 0.5s ease;
+            z-index: 10;
+        }
+
+        .hidden {
+            opacity: 0;
+            pointer-events: none;
+            z-index: -1;
+            transform: scale(0.95);
+        }
+
+        /* 背景层 */
+        .bg-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to bottom, #fffdf5 0%, #f0dcb8 60%, #dcb885 100%);
+            z-index: 0;
+        }
+
+        .bg-illustration {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 50%;
+            background-image: url('https://images.unsplash.com/photo-1599577348037-29530495f503?q=80&w=2070&auto=format&fit=crop');
+            background-size: cover;
+            background-position: center bottom;
+            opacity: 0.4;
+            mask-image: linear-gradient(to top, black, transparent);
+            -webkit-mask-image: linear-gradient(to top, black, transparent);
+            z-index: 1;
+        }
+
+        /* 通用面板框 */
+        .panel-box {
+            position: relative;
+            z-index: 20;
+            background: rgba(255, 253, 245, 0.92);
+            border: 2px solid #bfa373;
+            outline: 4px solid rgba(191, 163, 115, 0.3);
+            box-shadow: 0 10px 30px rgba(92, 64, 30, 0.25);
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .panel-box::after {
+            content: '';
+            position: absolute;
+            top: 6px;
+            left: 6px;
+            right: 6px;
+            bottom: 6px;
+            border: 1px solid #8c6434;
+            pointer-events: none;
+            border-radius: 6px;
+        }
+
+        /* 胶囊按钮 */
+        .capsule-btn {
+            font-family: 'Ma Shan Zheng', cursive;
+            background: linear-gradient(to bottom, #f7e3ba 0%, #d4a055 100%);
+            border: 1px solid #c79653;
+            color: #5d3a1a;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+            border-radius: 50px;
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+
+        .capsule-btn:active {
+            transform: scale(0.95) brightness(0.9);
+        }
+
+        /* 全局退出按钮 (固定左下角) */
+        .back-btn {
+            position: fixed !important;
+            top: auto !important;
+            bottom: 40px !important;
+            left: 20px !important;
+            z-index: 1000;
+            background: rgba(93, 58, 26, 0.95);
+            color: #fff;
+            border: 2px solid #bfa373;
+            padding: 10px 25px;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: bold;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            margin-bottom: env(safe-area-inset-bottom);
+        }
+
+        .back-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* =========================================
+           2. 首页与菜单样式
+           ========================================= */
+        #page-index .panel-box {
+            width: 85%;
+            max-width: 600px;
+            padding: 50px 20px;
+            text-align: center;
+        }
+
+        .main-title {
+            font-family: 'Ma Shan Zheng', cursive;
+            color: #5d3a1a;
+            font-size: 13vw;
+            margin-bottom: 10px;
+            line-height: 1.1;
+        }
+
+        @media (min-width: 768px) {
+            .main-title {
+                font-size: 5rem;
+            }
+        }
+
+        .main-title span {
+            display: block;
+            font-size: 0.6em;
+            color: #8b5e3c;
+            margin-top: 5px;
+        }
+
+        .start-btn-lg {
+            margin-top: 40px;
+            padding: 12px 0;
+            width: 70%;
+            max-width: 240px;
+            font-size: 1.6rem;
+        }
+
+        .stamp-tag {
+            position: absolute;
+            right: 15px;
+            top: -10px;
+            background-color: #c92a2a;
+            color: #fff;
+            padding: 6px 3px;
+            font-size: 14px;
+            writing-mode: vertical-rl;
+            border-radius: 2px;
+            box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+            font-family: 'Ma Shan Zheng', cursive;
+        }
+
+        /* 菜单布局 (品字形) */
+        #page-select .panel-box {
+            width: 90%;
+            max-width: 500px;
+            height: auto;
+            min-height: 60%;
+            padding: 30px 20px;
+        }
+
+        .menu-header {
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+        }
+
+        .menu-title {
+            font-family: 'Ma Shan Zheng', cursive;
+            font-size: 2rem;
+            color: #5d3a1a;
+            margin: 0 15px;
+        }
+
+        .deco-line {
+            height: 2px;
+            width: 30px;
+            background-color: #bfa373;
+            position: relative;
+        }
+
+        .deco-line::after {
+            content: '';
+            position: absolute;
+            top: -3px;
+            right: 0;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: #bfa373;
+        }
+
+        .deco-line.left::after {
+            right: auto;
+            left: 0;
+        }
+
+        .game-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            row-gap: 30px;
+            column-gap: 20px;
+            width: 100%;
+            padding: 10px 0;
+        }
+
+        .grid-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .grid-item:first-child {
+            grid-column: 1 / -1;
+            margin-bottom: 10px;
+        }
+
+        .circle-thumb {
+            width: 26vw;
+            height: 26vw;
+            max-width: 110px;
+            max-height: 110px;
+            border-radius: 50%;
+            border: 4px solid #d4a055;
+            background-color: #eee;
+            margin-bottom: 12px;
+            overflow: hidden;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+            position: relative;
+        }
+
+        .grid-item:first-child .circle-thumb {
+            width: 32vw;
+            height: 32vw;
+            max-width: 140px;
+            max-height: 140px;
+            border-color: #c92a2a;
+        }
+
+        .circle-thumb img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: top;
+            transition: transform 0.3s;
+        }
+
+        .grid-item:hover .circle-thumb img {
+            transform: scale(1.1);
+        }
+
+        .grid-btn {
+            padding: 8px 0;
+            width: 100%;
+            min-width: 100px;
+            font-size: 1.1rem;
+        }
+
+        .grid-item:first-child .grid-btn {
+            width: 60%;
+            font-size: 1.3rem;
+        }
+
+        /* =========================================
+           3. 拼图游戏样式
+           ========================================= */
+        #page-gameplay {
+            background-color: #3e2723;
+            flex-direction: column;
+            justify-content: flex-start;
+            z-index: 50;
+        }
+
+        .game-nav {
+            width: 100%;
+            height: 60px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 0 15px;
+            background: rgba(0, 0, 0, 0.4);
+            z-index: 20;
+            position: relative;
+        }
+
+        .game-title-bar {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #f7e3ba;
+            font-family: 'Ma Shan Zheng';
+            font-size: 1.5rem;
+            white-space: nowrap;
+        }
+
+        .hint-btn,
+        .score-badge {
+            position: absolute;
+            right: 15px;
+            color: #f7e3ba;
+            font-family: 'Ma Shan Zheng';
+            font-size: 1.2rem;
+        }
+
+        .hint-btn {
+            background: #d4a055;
+            border: 1px solid #bfa373;
+            color: #5d3a1a;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: bold;
+        }
+
+        .puzzle-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+        }
+
+        /* 竖版适配 */
+        .puzzle-board {
+            height: 60vh;
+            width: auto;
+            aspect-ratio: 268 / 390;
+            max-width: 90vw;
+            background: #fffdf5;
+            border: 4px solid #bfa373;
+            border-radius: 8px;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            gap: 2px;
+            padding: 2px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
+            margin: 0 auto;
+        }
+
+        .puzzle-piece {
+            background-size: 300% 300%;
+            cursor: pointer;
+            transition: transform 0.2s;
+            border-radius: 2px;
+        }
+
+        .puzzle-piece.selected {
+            transform: scale(0.95);
+            box-shadow: 0 0 10px #fce300;
+            border: 2px solid #fce300;
+            z-index: 10;
+        }
+
+        .puzzle-tip {
+            margin-top: 20px;
+            color: #aaa;
+            font-size: 0.9rem;
+        }
+
+        .hint-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 30;
+            pointer-events: none;
+        }
+
+        .hint-overlay img {
+            width: auto;
+            height: 70%;
+            border: 4px solid #fff;
+        }
+
+        /* 胜利弹窗通用 */
+        .win-modal {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 60;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .win-content {
+            background: #fffdf5;
+            padding: 30px;
+            border-radius: 12px;
+            text-align: center;
+            width: 85%;
+            max-width: 340px;
+            border: 4px solid #bfa373;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.2);
+        }
+
+        /* 故事滚动框 */
+        .story-box {
+            background: rgba(240, 220, 184, 0.3);
+            border: 1px dashed #bfa373;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 6px;
+            max-height: 25vh;
+            overflow-y: auto;
+            text-align: left;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            color: #4e342e;
+            text-indent: 2em;
+        }
+
+        /* 弹窗大按钮 */
+        .win-btn-group {
+            margin-top: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            align-items: center;
+            width: 100%;
+        }
+
+        .win-btn-group .capsule-btn {
+            width: 80% !important;
+            padding: 12px 0 !important;
+            font-size: 1.3rem !important;
+            display: block;
+        }
+
+        .capsule-btn.secondary {
+            background: none;
+            border: 2px solid #8c6434 !important;
+            color: #8c6434;
+            font-weight: bold;
+        }
+
+        /* =========================================
+           4. 问答游戏样式
+           ========================================= */
+        #page-quiz {
+            background-color: #5d4037;
+            flex-direction: column;
+        }
+
+        .quiz-container {
+            flex: 1;
+            width: 100%;
+            max-width: 600px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding-bottom: 80px;
+        }
+
+        .question-card {
+            background: #fffdf5;
+            padding: 25px 20px;
+            border-radius: 10px;
+            border: 3px solid #bfa373;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            margin-bottom: 20px;
+            position: relative;
+            text-align: center;
+        }
+
+        .q-tag {
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #c92a2a;
+            color: white;
+            padding: 4px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        .q-text {
+            font-size: 1.2rem;
+            color: #3e2723;
+            font-weight: bold;
+            line-height: 1.6;
+            margin-top: 10px;
+        }
+
+        .quiz-tools {
+            display: flex;
+            justify-content: flex-end;
+            width: 100%;
+            margin-bottom: 15px;
+        }
+
+        .tool-btn {
+            background: #fbc02d;
+            color: #5d3a1a;
+            border: 2px solid #f57f17;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            transition: all 0.2s;
+        }
+
+        .tool-btn:disabled {
+            background: #e0e0e0;
+            color: #999;
+            border-color: #ccc;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        .options-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .option-btn {
+            background: #eaddcf;
+            border: 2px solid #bfa373;
+            padding: 12px;
+            border-radius: 50px;
+            font-size: 1rem;
+            color: #5d3a1a;
+            text-align: left;
+            padding-left: 20px;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.2s;
+        }
+
+        .option-btn:active {
+            transform: scale(0.98);
+        }
+
+        .option-btn.correct {
+            background: #a5d6a7;
+            border-color: #2e7d32;
+            color: #1b5e20;
+        }
+
+        .option-btn.wrong {
+            background: #ef9a9a;
+            border-color: #c62828;
+            color: #b71c1c;
+        }
+
+        .option-btn.eliminated {
+            opacity: 0.3;
+            pointer-events: none;
+            filter: grayscale(100%);
+        }
+
+        .feedback-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 80;
+        }
+
+        .feedback-box {
+            background: #fff;
+            width: 90%;
+            max-width: 400px;
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+            animation: slideUp 0.3s ease-out;
+        }
+
+        .fb-icon {
+            font-size: 3rem;
+            margin-bottom: 10px;
+        }
+
+        .fb-text {
+            color: #666;
+            font-size: 1rem;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+
+        /* 问答下一题按钮 */
+        .feedback-box .capsule-btn {
+            width: 50% !important;
+            min-width: 140px;
+            padding: 8px 0 !important;
+            font-size: 1.1rem !important;
+            margin-top: 15px !important;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(20px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        /* =========================================
+           5. 翻牌游戏样式
+           ========================================= */
+        #page-memory {
+            background-color: #3e2723;
+            flex-direction: column;
+        }
+
+        .memory-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            padding-bottom: 60px;
+        }
+
+        .memory-board {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            width: 90vw;
+            max-width: 360px;
+            padding: 10px;
+        }
+
+        .card {
+            background-color: transparent;
+            width: 100%;
+            aspect-ratio: 3 / 4;
+            perspective: 1000px;
+            cursor: pointer;
+        }
+
+        .card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .card.flipped .card-inner {
+            transform: rotateY(180deg);
+        }
+
+        /* 匹配成功动画：保留显示，绿光高亮 */
+        @keyframes matchSuccessAnim {
+            0% {
+                transform: scale(1);
+                border-color: #d4a055;
+            }
+
+            50% {
+                transform: scale(1.1);
+                border-color: #4caf50;
+                box-shadow: 0 0 15px #4caf50;
+            }
+
+            100% {
+                transform: scale(1);
+                border-color: #4caf50;
+                opacity: 1;
+            }
+        }
+
+        .card.matched {
+            pointer-events: none;
+            animation: matchSuccessAnim 0.5s ease-out forwards;
+        }
+
+        .card.matched .card-back {
+            border-color: #4caf50 !important;
+            border-width: 3px;
+        }
+
+        .card-front,
+        .card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            border-radius: 8px;
+            border: 2px solid #d4a055;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .card-front {
+            background: #8c6434;
+            background-image: repeating-linear-gradient(45deg, #8c6434 0, #8c6434 10px, #7a562b 10px, #7a562b 20px);
+            color: #f7e3ba;
+            font-family: 'Ma Shan Zheng';
+            font-size: 2rem;
+        }
+
+        .card-back {
+            background-color: #fffdf5;
+            transform: rotateY(180deg);
+            background-size: cover;
+            background-position: center;
+        }
+
+        /* 花瓣动画 */
+        .falling-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 5;
+            overflow: hidden;
+        }
+
+        .petal {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            border-radius: 50% 0 50% 0;
+            opacity: 0.7;
+            animation: fall linear infinite;
+        }
+
+        @keyframes fall {
+            0% {
+                transform: translate(0, -10px) rotate(0deg);
+                opacity: 0;
+            }
+
+            10% {
+                opacity: 0.8;
+            }
+
+            100% {
+                transform: translate(50px, 105vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- 背景层 -->
+    <div class="bg-layer"></div>
+    <div class="bg-illustration"></div>
+    <div class="falling-container" id="fallingContainer"></div>
+
+    <!-- 1. 首页 -->
+    <div id="page-index" class="page">
+        <div class="panel-box">
+            <div class="stamp-tag">非遗文化</div>
+            <h1 class="main-title">朱仙镇<span>木版年画</span></h1>
+            <div style="font-size: 1.1rem; color:#8c6434; font-family:'Ma Shan Zheng'">传统工艺科普小游戏</div>
+            <button class="capsule-btn start-btn-lg" onclick="goToPage('page-select')">开始游戏</button>
+        </div>
+    </div>
+
+    <!-- 2. 菜单页 -->
+    <div id="page-select" class="page hidden">
+        <button class="back-btn" onclick="goToPage('page-index')">← 返回首页</button>
+        <div class="panel-box">
+            <div class="menu-header">
+                <div class="deco-line left"></div>
+                <h2 class="menu-title">游艺工坊</h2>
+                <div class="deco-line"></div>
+            </div>
+
+            <div class="game-grid">
+                <!-- 拼图 (Top) -->
+                <div class="grid-item">
+                    <div class="circle-thumb">
+                        <img src="images/puzzle.jpg" alt="Puzzle">
+                    </div>
+                    <button class="capsule-btn grid-btn" onclick="startGameLevel('puzzle')">年画拼图</button>
+                </div>
+                <!-- 翻牌 (Left) -->
+                <div class="grid-item">
+                    <div class="circle-thumb">
+                        <img src="images/memory.jpg" alt="Memory">
+                    </div>
+                    <button class="capsule-btn grid-btn" onclick="startGameLevel('memory')">翻牌记忆</button>
+                </div>
+                <!-- 问答 (Right) -->
+                <div class="grid-item">
+                    <div class="circle-thumb">
+                        <img src="images/quiz.jpg" alt="Quiz">
+                    </div>
+                    <button class="capsule-btn grid-btn" onclick="startGameLevel('quiz')">知识问答</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. 拼图游戏 -->
+    <div id="page-gameplay" class="page hidden">
+        <div class="game-nav">
+            <div class="game-title-bar">年画拼图</div>
+            <button class="hint-btn" ontouchstart="showHint()" ontouchend="hideHint()" onmousedown="showHint()"
+                onmouseup="hideHint()">按住看图</button>
+        </div>
+        <button class="back-btn" onclick="goToPage('page-select')">← 退出</button>
+
+        <div class="puzzle-container">
+            <div id="puzzle-board" class="puzzle-board"></div>
+            <div class="puzzle-tip">点击两块碎片进行交换</div>
+        </div>
+        <div id="hint-overlay" class="hint-overlay hidden">
+            <img id="hint-image" src="" alt="原图">
+        </div>
+
+        <div id="win-modal" class="win-modal hidden">
+            <div class="win-content">
+                <h2 style="color:#c92a2a; margin-bottom:5px; font-family:'Ma Shan Zheng'">拼图成功!</h2>
+                <h3 id="story-title" style="color:#5d3a1a; font-size:1.1rem; margin-bottom:10px; font-weight:bold;">
+                </h3>
+                <div class="story-box">
+                    <p id="story-desc">加载中...</p>
+                </div>
+                <div class="win-btn-group">
+                    <button class="capsule-btn" onclick="initPuzzleGame()">再玩一次</button>
+                    <button class="capsule-btn secondary" onclick="goToPage('page-select')">返回菜单</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. 问答游戏 -->
+    <div id="page-quiz" class="page hidden">
+        <div class="game-nav">
+            <div class="game-title-bar">科普问答</div>
+            <div class="score-badge">得分: <span id="quiz-score">0</span></div>
+        </div>
+        <button class="back-btn" onclick="goToPage('page-select')">← 退出</button>
+
+        <div class="quiz-container">
+            <div class="question-card">
+                <div class="q-tag">第 <span id="q-current">1</span>/<span id="q-total">5</span> 题</div>
+                <p id="question-text" class="q-text">题目加载中...</p>
+            </div>
+            <div class="quiz-tools">
+                <button id="btn-hint" class="tool-btn" onclick="useHint()">💡 提示 (排除错误)</button>
+            </div>
+            <div id="options-list" class="options-list"></div>
+        </div>
+
+        <div id="quiz-feedback" class="feedback-overlay hidden">
+            <div class="feedback-box">
+                <div id="fb-icon" class="fb-icon">✅</div>
+                <h3 id="fb-title">回答正确!</h3>
+                <p id="fb-explain" class="fb-text">解析...</p>
+                <button class="capsule-btn" onclick="nextQuestion()">下一题</button>
+            </div>
+        </div>
+
+        <div id="quiz-result" class="win-modal hidden">
+            <div class="win-content">
+                <h2 style="color:#c92a2a; margin-bottom:10px; font-family:'Ma Shan Zheng'">挑战结束</h2>
+                <p style="font-size:1.2rem; margin-bottom:10px;">你的得分: <b id="final-score"
+                        style="color:#d4a055; font-size:1.5rem;"></b></p>
+                <p id="result-title" style="color:#888; margin-bottom:20px;"></p>
+                <div class="win-btn-group">
+                    <button class="capsule-btn" onclick="initQuizGame()">再测一次</button>
+                    <button class="capsule-btn secondary" onclick="goToPage('page-select')">返回菜单</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 5. 翻牌游戏 -->
+    <div id="page-memory" class="page hidden">
+        <div class="game-nav">
+            <div class="game-title-bar">年画记忆</div>
+            <div class="score-badge">步数: <span id="memory-steps">0</span></div>
+        </div>
+        <button class="back-btn" onclick="goToPage('page-select')">← 退出</button>
+
+        <div class="memory-container">
+            <div id="memory-board" class="memory-board"></div>
+            <div class="puzzle-tip" style="margin-top:15px;">翻开卡片，寻找相同的图案</div>
+        </div>
+
+        <div id="memory-win" class="win-modal hidden">
+            <div class="win-content">
+                <h2 style="color:#c92a2a; margin-bottom:10px; font-family:'Ma Shan Zheng'">挑战成功!</h2>
+                <p style="font-size:1.1rem; color:#5d3a1a;">你对年画的细节记忆力惊人！</p>
+                <div class="win-btn-group">
+                    <button class="capsule-btn" onclick="initMemoryGame()">再玩一次</button>
+                    <button class="capsule-btn secondary" onclick="goToPage('page-select')">返回菜单</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ============================================
+        // 🚀 全局逻辑与特效
+        // ============================================
+        function goToPage(targetId) {
+            const pages = document.querySelectorAll('.page');
+            pages.forEach(page => {
+                if (!page.classList.contains('hidden')) {
+                    page.style.opacity = '0';
+                    page.style.transform = 'scale(0.95)';
+                    setTimeout(() => page.classList.add('hidden'), 500);
+                }
+            });
+            setTimeout(() => {
+                const targetPage = document.getElementById(targetId);
+                targetPage.classList.remove('hidden');
+                requestAnimationFrame(() => {
+                    targetPage.style.opacity = '1';
+                    targetPage.style.transform = 'scale(1)';
+                });
+            }, 500);
+        }
+
+        function startGameLevel(levelName) {
+            if (levelName === 'puzzle') {
+                goToPage('page-gameplay');
+                setTimeout(initPuzzleGame, 100);
+            } else if (levelName === 'quiz') {
+                goToPage('page-quiz');
+                setTimeout(initQuizGame, 100);
+            } else if (levelName === 'memory') {
+                goToPage('page-memory');
+                setTimeout(initMemoryGame, 100);
+            }
+        }
+
+        function createPetals() {
+            const container = document.getElementById('fallingContainer');
+            for (let i = 0; i < 8; i++) setTimeout(() => spawnPetal(container), i * 800);
+        }
+        function spawnPetal(container) {
+            const petal = document.createElement('div');
+            petal.classList.add('petal');
+            const left = Math.random() * 100;
+            const size = Math.random() * 8 + 4;
+            const dur = Math.random() * 5 + 8;
+            const colorVar = Math.random();
+            if (colorVar > 0.6) petal.style.backgroundColor = '#d46a6a';
+            else if (colorVar > 0.3) petal.style.backgroundColor = '#e6b88a';
+            else petal.style.backgroundColor = '#f7d3ba';
+            petal.style.left = left + '%'; petal.style.width = size + 'px'; petal.style.height = size + 'px'; petal.style.animationDuration = dur + 's';
+            container.appendChild(petal);
+            petal.addEventListener('animationend', () => { petal.remove(); spawnPetal(container); });
+        }
+        window.onload = createPetals;
+
+        // ============================================
+        // 🧩 拼图游戏 (随机1-25 + 故事库)
+        // ============================================
+        const puzzleFolder = "images/puzzles/";
+        const puzzleExt = ".png"; // ⚠️如果是jpg改这里
+        const puzzleTotal = 25;
+
+        let puzzleImageLibrary = [];
+        for (let i = 1; i <= puzzleTotal; i++) {
+            puzzleImageLibrary.push(`${puzzleFolder}${i}${puzzleExt}`);
+        }
+
+        const puzzleStories = [
+            null,
+            { title: "雲記・步下鞭尉迟恭", desc: "这是尉迟恭（尉迟敬德），为唐代开国名将。传说唐太宗李世民因噩梦缠身，他与秦琼主动守在宫门驱走鬼魅，从此成为民间最受欢迎的门神之一。这张是“步下鞭”造型，尉迟恭手持金鞭，身披鱼鳞甲，威风凛凛。“雲記”是民国时期开封著名的年画商号。" },
+            { title: "振源永・马上鞭秦琼", desc: "这是秦琼（秦叔宝），为唐代开国名将，也是门神的核心形象之一。他手持双锏，骑黄骠马，属于“马上鞭”造型。传说秦琼与尉迟恭为唐太宗守宫门后，其画像被贴于家家户户门上辟邪。“振源永”是朱仙镇传统年画作坊字号。" },
+            { title: "老店・步下鞭秦琼", desc: "这是秦琼（秦叔宝），为“步下鞭”造型。他手持双锏，姿态刚劲，是朱仙镇“老店”作坊的经典门神样式。秦琼在民间被尊为“护宅门神”，其形象寓意守护家宅、驱邪纳福。" },
+            { title: "老店・马上鞭尉迟恭", desc: "这是尉迟恭（尉迟敬德），为“马上鞭”造型。他骑乌骓马，持金鞭，是“老店”作坊的代表作品。尉迟恭的黑脸形象与秦琼的红脸形成鲜明对比，在民间门神中通常成对出现，象征“左右守护、无敢犯者”。" },
+            { title: "雲記・马上鞭秦琼", desc: "这是秦琼（秦叔宝），为“马上鞭”造型，由“雲記”商号出品。他骑黄骠马，持双锏，姿态英武。这类骑马门神通常贴于大户人家的院门，寓意“马到成功、驱邪镇宅”。" },
+            { title: "老店・马上鞭秦琼", desc: "这是秦琼（秦叔宝），为“马上鞭”造型，由“老店”作坊出品。他的形象夸张粗犷，色彩浓烈，符合朱仙镇年画“头大身小、线条简练”的艺术特点。" },
+            { title: "雲記・步下鞭关羽", desc: "这是关羽（关云长），手持青龙偃月刀，身披绿袍，是民间信仰中的“忠义之神”。关羽作为门神，既取其“神威”震慑邪祟，也借其“忠义”象征家庭伦理的坚守。" },
+            { title: "老店・步下鞭张飞", desc: "这是张飞（张翼德），手持丈八蛇矛，黑脸圆睁。张飞的形象寓意“勇猛驱邪、守护家宅”，常与关羽成对出现，象征“忠义双全、内外守护”。" },
+            { title: "雲記・立刀关羽", desc: "这是关羽（关云长），为“立刀”造型，由“雲記”商号出品。他手持青龙偃月刀，姿态威严，是民间信仰中“招财进宝、驱邪避灾”的全能神祇。" },
+            { title: "老店・步下鞭张飞", desc: "这是张飞（张翼德），为“步下鞭”造型，由“老店”作坊出品。他的形象粗犷豪放，色彩浓烈，体现了朱仙镇年画“线条粗犷、造型夸张”的艺术风格。" },
+            { title: "带子门神・秦琼", desc: "这是秦琼的“带子门神”造型。画面中秦琼身披铠甲，身旁跟随一名童子，这种“带子”形象寓意“家族传承、子嗣绵延”，既保家宅平安，也祈愿人丁兴旺。" },
+            { title: "带子门神・尉迟恭", desc: "这是尉迟恭的“带子门神”造型，与秦琼成对出现。尉迟恭手持长枪，身旁童子相伴，延续了“带子门神”的吉祥寓意，象征“守护家宅、福泽后代”。" },
+            { title: "雲記・坐旗官关羽", desc: "这是关羽的“坐旗官”造型，由“雲記”商号出品。关羽身披绿袍，手持令旗与宝印，姿态威严庄重。“坐旗官”象征“权威、忠义与护佑”。" },
+            { title: "老店・坐旗官张飞", desc: "这是张飞的“坐旗官”造型，由“老店”作坊出品。张飞手持令旗，神态刚猛，象征“忠义双全、威慑邪祟”。适合贴于商铺或院门。" },
+            { title: "雲記・坐旗官岳飞", desc: "这是岳飞（岳鹏举）的“坐旗官”造型。岳飞手持令旗，身披铠甲，是民间信仰中“忠君爱国、驱邪护民”的精神象征。" },
+            { title: "老店・坐旗官赵匡胤", desc: "这是赵匡胤（宋太祖）的“坐旗官”造型。赵匡胤手持令旗，神态威严，作为开国皇帝，其形象象征“皇权护佑、家宅稳固”。" },
+            { title: "雲記・马上鞭燃灯道人", desc: "这是燃灯道人（道教神祇）的“马上鞭”造型。他骑乘神兽，手持长鞭，白须飘逸，是道教体系中“驱邪镇煞、护持正道”的重要神祇。" },
+            { title: "老店・步下鞭赵公明", desc: "这是赵公明（武财神）的“步下鞭”造型。他骑乘黑虎，手持铁鞭，是民间信仰中最具影响力的财神之一，寓意招财进宝、驱邪镇宅。" },
+            { title: "振源永・马上鞭姜太公", desc: "这是姜子牙（姜太公）的“马上鞭”造型，由“振源永”作坊出品。他骑乘神兽，手持打神鞭，白须飘逸，寓意“诸神退位、百邪不侵”。" },
+            { title: "朱仙镇・步下鞭钟馗", desc: "这是钟馗的“步下鞭”造型。他骑乘神兽，手持宝剑，豹头环眼，是民间传说中“捉鬼驱邪”的专职神祇，寓意“镇宅驱邪、保平安”。" },
+            { title: "雲記・送子财神", desc: "这是文财神（比干/范蠡）的“送子”造型。财神身披官袍，童子手持宝瓶花枝，寓意“花开富贵、子嗣绵延”，是深受喜爱的“双喜”题材。" },
+            { title: "天官赐福", desc: "这是天官，手持“天官赐福”红色卷轴，形象端庄威严。在民间信仰中，天官掌管人间福禄，寓意迎接福气、祈求一年顺遂平安。" },
+            { title: "教子成名・名受诰封", desc: "这是一幅教化类年画，描绘母亲教子成才。上方题字“教子成名 名受诰封”，传递“母慈子孝、耕读传家”的传统价值观。" },
+            { title: "天地得意・利市仙官", desc: "这是利市仙官，画面标注“天地得意”，手持“招财利市”卷轴。寓意“生意红火、财源广进”，适合贴于商铺柜台或家庭财位。" },
+            { title: "五子登科・福禄寿三星", desc: "这是五子登科题材，核心为福星，环绕五位童子。寓意“子弟成才、家族兴旺”，寄托着父母对子女学业有成、光宗耀祖的期望。" }
+        ];
+
+        let currentPuzzleImage = "";
+        let currentPuzzleIndex = 0;
+        let pieces = [];
+        let selectedPieceIndex = -1;
+        const gridSize = 3;
+
+        function initPuzzleGame() {
+            const board = document.getElementById('puzzle-board');
+            const hintImg = document.getElementById('hint-image');
+
+            // 随机1-25
+            currentPuzzleIndex = Math.floor(Math.random() * puzzleTotal) + 1;
+            currentPuzzleImage = `${puzzleFolder}${currentPuzzleIndex}${puzzleExt}`;
+
+            hintImg.src = currentPuzzleImage;
+            board.innerHTML = '';
+            document.getElementById('win-modal').classList.add('hidden');
+
+            pieces = Array.from({ length: gridSize * gridSize }, (_, i) => i);
+            do {
+                pieces.sort(() => Math.random() - 0.5);
+            } while (checkWinCondition(true));
+
+            pieces.forEach((imgIndex, gridIndex) => {
+                const piece = document.createElement('div');
+                piece.className = 'puzzle-piece';
+                piece.dataset.index = gridIndex;
+                const x = (imgIndex % gridSize) * 50;
+                const y = Math.floor(imgIndex / gridSize) * 50;
+                piece.style.backgroundImage = `url(${currentPuzzleImage})`;
+                piece.style.backgroundPosition = `${x}% ${y}%`;
+                piece.onclick = () => handlePieceClick(gridIndex);
+                board.appendChild(piece);
+            });
+            selectedPieceIndex = -1;
+        }
+
+        function handlePieceClick(clickedIndex) {
+            const pieceDivs = document.querySelectorAll('.puzzle-piece');
+            if (selectedPieceIndex === -1) {
+                selectedPieceIndex = clickedIndex;
+                pieceDivs[clickedIndex].classList.add('selected');
+                return;
+            }
+            if (selectedPieceIndex === clickedIndex) {
+                selectedPieceIndex = -1;
+                pieceDivs[clickedIndex].classList.remove('selected');
+                return;
+            }
+            swapPieces(selectedPieceIndex, clickedIndex);
+        }
+
+        function swapPieces(indexA, indexB) {
+            const pieceDivs = document.querySelectorAll('.puzzle-piece');
+            const divA = pieceDivs[indexA];
+            const divB = pieceDivs[indexB];
+            const tempBg = divA.style.backgroundPosition;
+            divA.style.backgroundPosition = divB.style.backgroundPosition;
+            divB.style.backgroundPosition = tempBg;
+            [pieces[indexA], pieces[indexB]] = [pieces[indexB], pieces[indexA]];
+            divA.classList.remove('selected');
+            selectedPieceIndex = -1;
+            if (checkWinCondition()) setTimeout(showPuzzleWin, 300);
+        }
+
+        function checkWinCondition(isSilent = false) {
+            for (let i = 0; i < pieces.length; i++) if (pieces[i] !== i) return false;
+            return true;
+        }
+
+        function showPuzzleWin() {
+            let storyData = puzzleStories[currentPuzzleIndex];
+            if (!storyData) storyData = { title: "朱仙镇年画", desc: "这是一张精美的朱仙镇木版年画，蕴含着深厚的文化底蕴。" };
+            document.getElementById('story-title').innerText = storyData.title;
+            document.getElementById('story-desc').innerText = storyData.desc;
+            document.getElementById('win-modal').classList.remove('hidden');
+        }
+
+        function showHint() { document.getElementById('hint-overlay').classList.remove('hidden'); }
+        function hideHint() { document.getElementById('hint-overlay').classList.add('hidden'); }
+
+        // ============================================
+        // 🧠 知识问答游戏 (随机5题 + 提示)
+        // ============================================
+        const quizDatabase = [
+            { q: "朱仙镇木版年画产自哪个省份？", opts: ["A. 河南", "B. 天津", "C. 江苏", "D. 四川"], a: 0, exp: "朱仙镇位于河南省开封市。" },
+            { q: "朱仙镇年画制作主要使用哪种木材？", opts: ["A. 松木", "B. 梨木", "C. 桦木", "D. 檀木"], a: 1, exp: "梨木纹理细腻，适合雕刻。" },
+            { q: "朱仙镇年画颜料主要来源于？", opts: ["A. 化学合成", "B. 矿石", "C. 植物熬制", "D. 进口"], a: 2, exp: "传统工艺使用植物颜料，久不褪色。" },
+            { q: "以下哪个不是朱仙镇年画常用色？", opts: ["A. 紫色", "B. 绿色", "C. 黑色", "D. 荧光粉"], a: 3, exp: "传统年画不含现代荧光色。" },
+            { q: "朱仙镇年画最大的工艺特色是？", opts: ["A. 水墨写意", "B. 手工描绘", "C. 套色印刷", "D. 电脑喷绘"], a: 2, exp: "完全通过多块木板分层套色印刷。" },
+            { q: "被誉为朱仙镇年画鼻祖的是？", opts: ["A. 门神", "B. 财神", "C. 灶王爷", "D. 钟馗"], a: 0, exp: "门神画起源最早，是其代表作。" },
+            { q: "朱仙镇年画人物形象的特点是？", opts: ["A. 瘦骨嶙峋", "B. 头大身小", "C. 写实逼真", "D. 黑白分明"], a: 1, exp: "造型夸张，往往头大身小，显得威严饱满。" },
+            { q: "贴年画通常是在哪个节日？", opts: ["A. 中秋节", "B. 端午节", "C. 春节", "D. 清明节"], a: 2, exp: "辞旧迎新，春节贴年画。" },
+            { q: "“步下鞭”这幅年画描绘的是哪两位？", opts: ["A. 关羽张飞", "B. 秦琼敬德", "C. 刘备诸葛亮", "D. 孙悟空八戒"], a: 1, exp: "秦琼与尉迟恭（敬德）是经典的门神形象。" },
+            { q: "朱仙镇年画中，代表“多子多福”的是？", opts: ["A. 莲花", "B. 麒麟送子", "C. 牡丹", "D. 猛虎"], a: 1, exp: "麒麟送子寓意家族兴旺，早生贵子。" },
+            { q: "年画中“蝙蝠”的图案寓意什么？", opts: ["A. 黑暗", "B. 遍地是福", "C. 飞翔", "D. 捕食"], a: 1, exp: "“蝠”与“福”谐音，寓意遍地是福。" },
+            { q: "朱仙镇年画被列入国家级非遗名录是在？", opts: ["A. 2006年", "B. 1990年", "C. 2020年", "D. 2000年"], a: 0, exp: "2006年首批入选。" },
+            { q: "传统年画的“线版”是指什么颜色？", opts: ["A. 红色", "B. 黑色", "C. 黄色", "D. 绿色"], a: 1, exp: "线版即墨线版，印轮廓，通常是黑色。" },
+            { q: "下列哪项不是朱仙镇年画的题材？", opts: ["A. 历史故事", "B. 神话传说", "C. 现代抽象画", "D. 吉祥图案"], a: 2, exp: "年画多取材于传统故事和吉祥寓意。" },
+            { q: "“五子夺莲”寓意是什么？", opts: ["A. 连生贵子", "B. 五谷丰登", "C. 连年有余", "D. 花开富贵"], a: 0, exp: "莲与连谐音，子代表孩子，寓意连生贵子。" },
+            { q: "朱仙镇年画中“马上鞭”的主角是？", opts: ["A. 岳飞", "B. 秦琼敬德", "C. 赵云", "D. 穆桂英"], a: 1, exp: "秦琼敬德有马上鞭和步下鞭两种造型。" },
+            { q: "刻板时，刀法要求是？", opts: ["A. 随意发挥", "B. 陡刀立线", "C. 浅尝辄止", "D. 机器雕刻"], a: 1, exp: "陡刀立线，刻出的线条挺拔有力。" },
+            { q: "印制年画时，通常先印什么版？", opts: ["A. 色版", "B. 墨线版", "C. 随意", "D. 签名"], a: 1, exp: "先印墨线版定轮廓，再套印色版。" },
+            { q: "朱仙镇年画的构图特点是？", opts: ["A. 留白很多", "B. 饱满紧凑", "C. 残缺美", "D. 极简主义"], a: 1, exp: "画面饱满，不留太多空白，显得热闹。" },
+            { q: "“刘海戏金蟾”寓意什么？", opts: ["A. 招财进宝", "B. 身体健康", "C. 学业有成", "D. 出入平安"], a: 0, exp: "金蟾吐钱，寓意财源广进。" }
+        ];
+
+        let currentRoundQuestions = [];
+        let currentQIndex = 0;
+        let quizScore = 0;
+
+        function initQuizGame() {
+            currentQIndex = 0;
+            quizScore = 0;
+            document.getElementById('quiz-score').innerText = "0";
+            document.getElementById('quiz-result').classList.add('hidden');
+            document.getElementById('quiz-feedback').classList.add('hidden');
+
+            let tempPool = [...quizDatabase];
+            for (let i = tempPool.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [tempPool[i], tempPool[j]] = [tempPool[j], tempPool[i]];
+            }
+            currentRoundQuestions = tempPool.slice(0, 5);
+            renderQuestion();
+        }
+
+        function renderQuestion() {
+            const qData = currentRoundQuestions[currentQIndex];
+            const hintBtn = document.getElementById('btn-hint');
+            hintBtn.disabled = false; hintBtn.style.opacity = "1";
+
+            document.getElementById('q-current').innerText = currentQIndex + 1;
+            document.getElementById('q-total').innerText = currentRoundQuestions.length;
+            document.getElementById('question-text').innerText = qData.q;
+
+            const optionsBox = document.getElementById('options-list');
+            optionsBox.innerHTML = '';
+            qData.opts.forEach((optText, index) => {
+                const btn = document.createElement('div');
+                btn.className = 'option-btn';
+                btn.innerText = optText;
+                btn.onclick = () => handleAnswer(index, btn);
+                optionsBox.appendChild(btn);
+            });
+        }
+
+        function useHint() {
+            const qData = currentRoundQuestions[currentQIndex];
+            const allBtns = Array.from(document.querySelectorAll('.option-btn'));
+            let wrongIndices = [];
+            allBtns.forEach((btn, index) => { if (index !== qData.a) wrongIndices.push(index); });
+            wrongIndices.sort(() => Math.random() - 0.5);
+            wrongIndices.slice(0, 2).forEach(index => allBtns[index].classList.add('eliminated'));
+            const hintBtn = document.getElementById('btn-hint');
+            hintBtn.disabled = true; hintBtn.style.opacity = "0.6";
+        }
+
+        function handleAnswer(selectedIndex, btnElement) {
+            const qData = currentRoundQuestions[currentQIndex];
+            const isCorrect = (selectedIndex === qData.a);
+            const allBtns = document.querySelectorAll('.option-btn');
+            allBtns.forEach(btn => btn.style.pointerEvents = 'none');
+            document.getElementById('btn-hint').disabled = true;
+
+            if (isCorrect) {
+                btnElement.classList.add('correct');
+                quizScore += 20;
+                document.getElementById('quiz-score').innerText = quizScore;
+                showFeedback(true, qData.exp);
+            } else {
+                btnElement.classList.add('wrong');
+                allBtns[qData.a].classList.add('correct');
+                showFeedback(false, qData.exp);
+            }
+        }
+
+        function showFeedback(isCorrect, explainText) {
+            const fbBox = document.getElementById('quiz-feedback');
+            fbBox.classList.remove('hidden');
+            const fbIcon = document.getElementById('fb-icon');
+            const fbTitle = document.getElementById('fb-title');
+            const fbExplain = document.getElementById('fb-explain');
+            if (isCorrect) {
+                fbIcon.innerText = "✅"; fbTitle.innerText = "回答正确!"; fbTitle.style.color = "#2e7d32";
+            } else {
+                fbIcon.innerText = "❌"; fbTitle.innerText = "回答错误"; fbTitle.style.color = "#c62828";
+            }
+            fbExplain.innerText = explainText;
+        }
+
+        function nextQuestion() {
+            document.getElementById('quiz-feedback').classList.add('hidden');
+            currentQIndex++;
+            if (currentQIndex < currentRoundQuestions.length) renderQuestion();
+            else showResult();
+        }
+
+        function showResult() {
+            const resultModal = document.getElementById('quiz-result');
+            document.getElementById('final-score').innerText = quizScore;
+            let title = "";
+            if (quizScore == 100) title = "获得称号：非遗传承人 (完美!)";
+            else if (quizScore >= 60) title = "获得称号：工艺匠人 (优秀)";
+            else title = "获得称号：年画学徒 (加油)";
+            document.getElementById('result-title').innerText = title;
+            resultModal.classList.remove('hidden');
+        }
+
+        // ============================================
+        // 🃏 翻牌记忆 (1-25 随机抽 6)
+        // ============================================
+        const memoryImageLibrary = puzzleImageLibrary; // 复用拼图的1-25张图库
+
+        let memoryCards = [];
+        let hasFlippedCard = false;
+        let lockBoard = false;
+        let firstCard, secondCard;
+        let matchCount = 0;
+        let memorySteps = 0;
+
+        function initMemoryGame() {
+            const board = document.getElementById('memory-board');
+            board.innerHTML = '';
+            [hasFlippedCard, lockBoard] = [false, false];
+            [firstCard, secondCard] = [null, null];
+            matchCount = 0;
+            memorySteps = 0;
+            document.getElementById('memory-steps').innerText = '0';
+            document.getElementById('memory-win').classList.add('hidden');
+
+            let tempPool = [...memoryImageLibrary];
+            tempPool.sort(() => Math.random() - 0.5);
+            let selectedImages = tempPool.slice(0, 6);
+            let fullDeck = [...selectedImages, ...selectedImages];
+            fullDeck.sort(() => Math.random() - 0.5);
+
+            fullDeck.forEach(imgUrl => {
+                const card = document.createElement('div');
+                card.classList.add('card');
+                card.innerHTML = `<div class="card-inner"><div class="card-front">福</div><div class="card-back" style="background-image: url('${imgUrl}')"></div></div>`;
+                card.dataset.image = imgUrl;
+                card.addEventListener('click', flipCard);
+                board.appendChild(card);
+            });
+        }
+
+        function flipCard() {
+            if (lockBoard) return;
+            if (this === firstCard) return;
+            this.classList.add('flipped');
+            if (!hasFlippedCard) {
+                hasFlippedCard = true;
+                firstCard = this;
+                return;
+            }
+            secondCard = this;
+            memorySteps++;
+            document.getElementById('memory-steps').innerText = memorySteps;
+            checkForMatch();
+        }
+
+        function checkForMatch() {
+            let isMatch = firstCard.dataset.image === secondCard.dataset.image;
+            isMatch ? disableCards() : unflipCards();
+        }
+
+        function disableCards() {
+            firstCard.removeEventListener('click', flipCard);
+            secondCard.removeEventListener('click', flipCard);
+            firstCard.classList.add('matched');
+            secondCard.classList.add('matched');
+            resetBoard();
+            matchCount++;
+            if (matchCount === 6) setTimeout(() => document.getElementById('memory-win').classList.remove('hidden'), 800);
+        }
+
+        function unflipCards() {
+            lockBoard = true;
+            setTimeout(() => {
+                firstCard.classList.remove('flipped');
+                secondCard.classList.remove('flipped');
+                resetBoard();
+            }, 600);
+        }
+
+        function resetBoard() {
+            [hasFlippedCard, lockBoard] = [false, false];
+            [firstCard, secondCard] = [null, null];
+        }
+    </script>
+</body>
+
+</html>
